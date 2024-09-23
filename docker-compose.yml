@@ -1,0 +1,83 @@
+services:
+  frontend:
+    build: ./frontend/
+    networks:
+      - public
+    restart: always
+    volumes:
+      - ./frontend:/app
+    ports:
+      - 80:5173
+    depends_on:
+      - nginx
+      - backend
+  
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - 2000:80
+    networks:
+      - public
+      - private
+    volumes:
+      - .docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+
+  backend:
+    # image: bitnami/laravel:latest
+    # image: node:latest
+    image: cyberduck/php-fpm-laravel:8.3
+    ports:
+      - 3000:9000
+    restart: always
+    networks:
+      - private
+    environment:
+      LARAVEL_DATABASE_TYPE: postgres
+      LARAVEL_DATABASE_HOST: '[::1]'
+      LARAVEL_DATABASE_PORT_NUMBER: 4000
+      LARAVEL_DATABASE_NAME: root
+      LARAVEL_DATABASE_USER: root
+      LARAVEL_DATABASE_PASSWORD: root
+    volumes:
+      - ./backend:/var/www/
+    command: bash -c "php artisan migrate && php-fpm & php artisan queue:work > queue.log"
+    depends_on:
+      - redis
+      - postgresql
+  
+  postgresql:
+    image: postgres:latest
+    ports:
+      - 4000:5432
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: root
+    restart: always
+    networks:
+      - private
+
+  redis:
+    image: redis:latest
+    ports:
+      - 5000:6379
+    restart: always
+    networks:
+      - private
+
+  smtp:
+    image: marcopas/docker-mailslurper
+    ports:
+      # smtp server
+      - "2500:2500"
+      # web interface
+      - "9000:8080"
+      - "8085:8085"
+    networks:
+      - public
+      - private
+
+networks:
+  public:
+  private:
