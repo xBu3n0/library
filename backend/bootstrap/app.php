@@ -7,6 +7,8 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\ItemNotFoundException;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use function Laravel\Prompts\error;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -36,7 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 content: [
                     "status" => 401,
                     "data" => null,
-                    "errors" => ["auth" => ["Unauthenticated"]],
+                    "errors" => ["message" => ["Unauthenticated"]],
                 ]
             );
         });
@@ -47,7 +49,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 content: [
                     "status" => 404,
                     "data" => null,
-                    "errors" => ["message" => "Item not exists"],
+                    "errors" => ["message" => ["Item not exists"]],
+                ]
+            );
+        });
+
+        $exceptions->render(function (AccessDeniedHttpException $e) {
+            return response(
+                status: 403,
+                content: [
+                    "status" => 403,
+                    "data" => null,
+                    "errors" => ["message" => ["Not authorized"]],
                 ]
             );
         });

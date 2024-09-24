@@ -5,6 +5,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Middleware\EnsureUserIsAuth;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix("auth")
@@ -19,12 +20,6 @@ Route::prefix("auth")
             "logout"
         );
     });
-
-/**
-Route::prefix("books")
-    ->name("books.")
-    ->group(function () {});
-*/
 
 Route::resource("books", BookController::class);
 
@@ -42,13 +37,15 @@ Route::middleware(EnsureUserIsAuth::class)->group(function () {
         ->name("notifications.")
         ->group(function () {
             Route::get("/", [NotificationController::class, "list"]);
+
             Route::put("/{notification}", [
                 NotificationController::class,
                 "read",
-            ]);
+            ])->can("read", "notification");
+
             Route::delete("/{notification}", [
                 NotificationController::class,
                 "destroy",
-            ]);
+            ])->can("delete", "notification");
         });
 });
