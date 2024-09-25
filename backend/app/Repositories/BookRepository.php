@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 use App\Models\Book;
+use App\Models\BookAuthor;
 use App\Models\BookGenre;
 use App\Models\Promotion;
 use App\Models\UserWhitelist;
@@ -10,15 +11,26 @@ use Illuminate\Support\Facades\DB;
 
 class BookRepository implements BookRepositoryI
 {
+    public function getRandomBooks(int $pagination, int $quantity): Collection
+    {
+        $genres = Book::with("authors", "genres")
+            ->orderBy(DB::raw("random()"))
+            ->skip($pagination * $quantity)
+            ->limit($quantity)
+            ->get();
+
+        return collect($genres);
+    }
+
     public function getBooksByGenre(
         string $genreId,
-        int $pagitation,
+        int $pagination,
         int $quantity
     ): Collection {
         $genres = BookGenre::query()
             ->where("id", $genreId)
             ->orderBy(DB::raw("random()"))
-            ->skip($pagitation * $quantity)
+            ->skip($pagination * $quantity)
             ->limit($quantity)
             ->pluck("book_id")
             ->get();
@@ -28,14 +40,14 @@ class BookRepository implements BookRepositoryI
 
     public function getBooksByWhitelist(
         string $userId,
-        int $pagitation,
+        int $pagination,
         int $quantity
     ): Collection {
         $whitelists = UserWhitelist::query()
             ->with("book")
             ->orderBy(DB::raw("random()"))
             ->where("user_id", $userId)
-            ->skip($pagitation * $quantity)
+            ->skip($pagination * $quantity)
             ->limit($quantity)
             ->get();
 
@@ -44,13 +56,13 @@ class BookRepository implements BookRepositoryI
 
     public function getBooksPromotionByGenre(
         string $genreId,
-        int $pagitation,
+        int $pagination,
         int $quantity
     ): Collection {
         $promotions = Promotion::query()
             ->where("id", $genreId)
             ->orderBy(DB::raw("random()"))
-            ->skip($pagitation * $quantity)
+            ->skip($pagination * $quantity)
             ->limit($quantity)
             ->pluck("book_id")
             ->get();
@@ -59,13 +71,13 @@ class BookRepository implements BookRepositoryI
     }
 
     public function getBooksByPromotion(
-        int $pagitation,
+        int $pagination,
         int $quantity
     ): Collection {
         $promotions = Promotion::query()
             ->with("book")
             ->orderBy(DB::raw("random()"))
-            ->skip($pagitation * $quantity)
+            ->skip($pagination * $quantity)
             ->limit($quantity)
             ->get();
 
@@ -74,10 +86,33 @@ class BookRepository implements BookRepositoryI
 
     public function create(array $book): Collection
     {
+        // Criação do livro
         $created = new Book($book);
         $created->save();
 
-        return $created;
+        // Criação dos vinculos autores e generos
+        $genres = $book["genres"];
+        $authors = $book["authors"];
+
+        foreach ($genres as $genreId) {
+            $genre = new BookGenre([
+                "book_id" => $created->id,
+                "genre_id" => $genreId,
+            ]);
+
+            $genre->save();
+        }
+
+        foreach ($authors as $authorId) {
+            $author = new BookAuthor([
+                "book_id" => $created->id,
+                "author_id" => $authorId,
+            ]);
+
+            $author->save();
+        }
+
+        return collect($created);
     }
 
     public function update(array $bookId, array $book): void

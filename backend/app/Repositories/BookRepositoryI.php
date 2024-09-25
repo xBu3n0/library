@@ -6,26 +6,28 @@ use Illuminate\Support\Collection;
 
 interface BookRepositoryI
 {
+    public function getRandomBooks(int $pagination, int $quantity): Collection;
+
     public function getBooksByGenre(
         string $genreId,
-        int $pagitation,
+        int $pagination,
         int $quantity
     ): Collection;
 
     public function getBooksByWhitelist(
         string $userId,
-        int $pagitation,
+        int $pagination,
         int $quantity
     ): Collection;
 
     public function getBooksPromotionByGenre(
         string $genreId,
-        int $pagitation,
+        int $pagination,
         int $quantity
     ): Collection;
 
     public function getBooksByPromotion(
-        int $pagitation,
+        int $pagination,
         int $quantity
     ): Collection;
 

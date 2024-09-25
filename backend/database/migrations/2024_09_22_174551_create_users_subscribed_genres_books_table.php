@@ -13,6 +13,8 @@ return new class extends Migration {
         Schema::create("users_subscribed_genres_books", function (
             Blueprint $table
         ) {
+            $table->uuid("id")->primary();
+
             $table
                 ->foreignUuid("user_id")
                 ->references("id")

@@ -20,7 +20,7 @@ class CartController extends Controller
     {
         $user = auth()->user();
 
-        // Interactor puxar a quantidade
+        // Interactor puxar a quantidad
         $count = $this->cartInteractor->getCount($user->id);
 
         $data = ["count" => $count];

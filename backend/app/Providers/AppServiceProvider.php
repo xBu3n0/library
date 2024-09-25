@@ -2,10 +2,16 @@
 
 namespace App\Providers;
 
+use App\Interactors\BookInteractor;
+use App\Interactors\BookInteractorI;
 use App\Interactors\CartInteractor;
 use App\Interactors\CartInteractorI;
+use App\Models\Genre;
 use App\Models\User;
+use App\Policies\GenrePolicy;
 use App\Policies\NotificationPolicy;
+use App\Repositories\BookRepository;
+use App\Repositories\BookRepositoryI;
 use App\Repositories\CartRepository;
 use App\Repositories\CartRepositoryI;
 use App\Services\ResponseService;
@@ -24,10 +30,12 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(ResponseServiceI::class, ResponseService::class);
         $this->app->bind(CartInteractorI::class, CartInteractor::class);
-        $this->app->bind(CartRepositoryI::class, CartRepository::class);
+        $this->app->bind(BookRepositoryI::class, BookRepository::class);
+        $this->app->bind(BookInteractorI::class, BookInteractor::class);
 
         // Policies
         Gate::policy(DatabaseNotification::class, NotificationPolicy::class);
+        Gate::policy(Genre::class, GenrePolicy::class);
     }
 
     /**

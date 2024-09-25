@@ -11,11 +11,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create("books_authors", function (Blueprint $table) {
+            $table->uuid("id")->primary();
+
             $table
                 ->foreignUuid("book_id")
                 ->references("id")
                 ->on("books")
                 ->onDelete("cascade");
+
             $table
                 ->foreignUuid("author_id")
                 ->references("id")
